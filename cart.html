@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cart</title>
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        border: 1px solid black;
+    }
+
+    th {
+        padding: 8px;
+        text-align: center;
+        background-color: beige;
+    }
+    td{
+        padding: 8px;
+        text-align: center;
+    }
+
+    button {
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+    <a href="homepage.html" style=" color: black; margin-left: 10px;">Home</a>
+    <br><br>
+
+<table id="cartTable">
+    <tr>
+        <th>Product Name</th>
+        <th>Price per Article</th>
+        <th>Quantity</th>
+        <th>Net Price</th>
+        <th>Action</th>
+    </tr>
+</table>
+
+<script>
+    const cartItems = JSON.parse(localStorage.getItem('cartItems'));
+
+    const table = document.getElementById('cartTable');
+
+    cartItems.forEach(item => {
+        const row = table.insertRow(-1);
+        row.insertCell(0).textContent = item.name;
+        row.insertCell(1).textContent = item.price;
+        const quantityCell = row.insertCell(2);
+        quantityCell.textContent = item.quantity;
+        const netPriceCell = row.insertCell(3);
+        netPriceCell.textContent = item.totalPrice;
+
+        const actionCell=row.insertCell(4);
+        const plusButton = document.createElement('button');
+        plusButton.textContent = '+';
+        plusButton.addEventListener('click', () => {
+            item.quantity++;
+            item.totalPrice = item.quantity * item.price;
+            quantityCell.textContent = item.quantity;
+            netPriceCell.textContent = item.totalPrice;
+            updateLocalStorage();
+        });
+        actionCell.appendChild(plusButton);
+
+        const minusButton = document.createElement('button');
+        minusButton.textContent = '-';
+        minusButton.addEventListener('click', () => {
+            if (item.quantity > 1) {
+                item.quantity--;
+                item.totalPrice = item.quantity * item.price;
+                quantityCell.textContent = item.quantity;
+                netPriceCell.textContent = item.totalPrice;
+                updateLocalStorage();
+            }
+        });
+        actionCell.appendChild(minusButton);
+    });
+
+    function updateLocalStorage() {
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    }
+</script>
+
+</body>
+</html>

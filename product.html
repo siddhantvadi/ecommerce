@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Table with Local Storage</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        #div {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        input {
+            height: 30px;
+            padding: 5px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            flex: 1;
+            margin-bottom: 10px;
+        }
+
+        button {
+            height: 36px;
+            padding: 0 15px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #heading {
+            background-color: lightgrey;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="heading">
+        <h2>Wendy's</h2>
+    </div>
+    <div id="div">
+        <input type="text" id="input1" placeholder="Enter Product Name">
+        <input type="text" id="input2" placeholder="Enter Quantity">
+        <input type="text" id="input3" placeholder="Enter Price Per Article">
+        <button onclick="addRow()">Add</button>
+    </div>
+
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price Per Article</th>
+                <th>Net Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            refreshTableFromLocalStorage();
+        });
+
+        function addRow() {
+            var input1 = document.getElementById("input1").value;
+            var input2 = document.getElementById("input2").value;
+            var input3 = document.getElementById("input3").value;
+
+            document.getElementById("input1").value = "";
+            document.getElementById("input2").value = "";
+            document.getElementById("input3").value = "";
+
+            addRowToLocalStorage(input1, input2, input3);
+        }
+
+        function addRowToTable(input1, input2, input3, index) {
+            var table = document.getElementById("dataTable").getElementsByTagName('tbody')[0];
+            var newRow = table.insertRow(table.rows.length);
+
+            var cell1 = newRow.insertCell(0);
+            var cell2 = newRow.insertCell(1);
+            var cell3 = newRow.insertCell(2);
+            var cell4 = newRow.insertCell(3);
+            var cell5 = newRow.insertCell(4);
+
+            cell1.innerHTML = `<input type="text" value="${input1}" id="editInput1_${index}">`;
+            cell2.innerHTML = `<input type="text" value="${input2}" id="editInput2_${index}">`;
+            cell3.innerHTML = `<input type="text" value="${input3}" id="editInput3_${index}">`;
+
+            var netPrice = input2 * input3;
+            cell4.innerHTML = netPrice;
+
+            cell5.innerHTML = `<div style="display:flex; align-items:center;">
+            <button onclick="updateData(${index})" style="margin-right: 5px;
+              padding: 8px 12px;
+              background-color: #007bff;
+              color: #fff;
+              border: none;
+              border-radius: 3px;
+              cursor: pointer;
+              transition: background-color 0.3s ease;">Update</button>
+            <button onclick="deleteData(${index})" style="margin-right: 5px;
+              padding: 8px 12px;
+              background-color: #ff0000;
+              color: #fff;
+              border: none;
+              border-radius: 3px;
+              cursor: pointer;
+              transition: background-color 0.3s ease;">Delete</button>
+        </div>`;
+        }
+
+        function addRowToLocalStorage(input1, input2, input3) {
+            var data = {
+                value1: input1,
+                value2: input2,
+                value3: input3
+            };
+
+            var existingData = JSON.parse(localStorage.getItem("tableData")) || [];
+            existingData.push(data);
+            localStorage.setItem("tableData", JSON.stringify(existingData));
+            refreshTableFromLocalStorage();
+            // addRowToTable(data)
+        }
+
+        function deleteRowFromLocalStorage(index) {
+            var existingData = JSON.parse(localStorage.getItem("tableData")) || [];
+            existingData.splice(index, 1);
+            localStorage.setItem("tableData", JSON.stringify(existingData));
+            refreshTableFromLocalStorage();
+        }
+
+        function updateData(index) {
+            var input1 = document.getElementById(`editInput1_${index}`).value;
+            var input2 = document.getElementById(`editInput2_${index}`).value;
+            var input3 = document.getElementById(`editInput3_${index}`).value;
+
+            var existingData = JSON.parse(localStorage.getItem("tableData")) || [];
+            existingData[index] = {
+                value1: input1,
+                value2: input2,
+                value3: input3
+            };
+
+            localStorage.setItem("tableData", JSON.stringify(existingData));
+            // addRowToTable(existingData[index])
+            refreshTableFromLocalStorage();
+        }
+
+        function refreshTableFromLocalStorage() {
+            var table = document.getElementById("dataTable").getElementsByTagName('tbody')[0];
+            table.innerHTML = "";
+
+            var existingData = JSON.parse(localStorage.getItem("tableData")) || [];
+
+            existingData.forEach((data, index) => {
+                addRowToTable(data.value1, data.value2, data.value3, index);
+            });
+        }
+
+        function deleteData(index) {
+            deleteRowFromLocalStorage(index);
+        }
+    </script>
+</body>
+
+</html>
